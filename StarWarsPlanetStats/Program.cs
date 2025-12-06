@@ -53,7 +53,16 @@ public class StarWarsPlanetsStatsApp
         {
             throw new ArgumentNullException(nameof(root));
         }
-        throw new NotImplementedException();
+        
+        var planets = new List<Planet>();
+
+        foreach(var planetDto in root)
+        {
+            Planet planet = (Planet)planetDto;
+            planets.Add(planet);
+        }
+
+        return planets;
     }
 }
 
@@ -70,9 +79,31 @@ public readonly record struct Planet
         {
             throw new ArgumentNullException($"{nameof(name)} is null");
         }
+
         Name = name;
         Diameter = diameter;
         SurfacecWater = surfacecWater;
         Population = population;
+    }
+
+    public static explicit operator Planet(Root planetDto)
+    {
+        var name = planetDto.name;
+        int? diameter = ToIntOrNull(planetDto.diameter);
+        int? surfaceWater = ToIntOrNull(planetDto.surface_water);
+        int? population = ToIntOrNull(planetDto.population);
+
+        return new Planet(name, diameter, surfaceWater, population);
+    }
+
+    private static int? ToIntOrNull(string input)
+    {
+        int? result = null;
+        if (int.TryParse(input, out int resultParsed))
+        {
+            result = resultParsed;
+        }
+
+        return result;
     }
 }
