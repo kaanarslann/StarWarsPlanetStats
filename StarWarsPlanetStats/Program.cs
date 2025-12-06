@@ -1,6 +1,7 @@
 ﻿using StarWarsPlanetsStats.ApiDataAccess;
 using StarWarsPlanetStats.ApiDataAccess;
 using StarWarsPlanetStats.DTOs;
+using System.Collections.Generic;
 using System.Text.Json;
 
 try
@@ -39,7 +40,7 @@ public class StarWarsPlanetsStatsApp
         }
         if (json is null)
         {
-            json = await _secondaryApiDataReader.Read("https://swapi.info/", "api/planets");
+            json = await _secondaryApiDataReader.Read("https://swapi.dev/", "api/planets");
         }
 
 
@@ -50,34 +51,31 @@ public class StarWarsPlanetsStatsApp
         {
             Console.WriteLine(planet);
         }
-
+        var propertyNamesToSelector = new Dictionary<string, Func<Planet, int?>>
+        {
+            ["population"] = planet => planet.Population,
+            ["diameter"] = planet => planet.Diameter,
+            ["surface water"] = planet => planet.SurfaceWater
+        };
+        
         Console.WriteLine();
+
         Console.WriteLine("The statistics of which property would you like to see?");
-        Console.WriteLine("population");
-        Console.WriteLine("diameter");
-        Console.WriteLine("surface water");
+        Console.WriteLine(string.Join(Environment.NewLine, propertyNamesToSelector.Keys));
 
         var userInput = Console.ReadLine();
 
-        if(userInput == "population")
-        {
-            ShowStatistics(planets, "population", planet => planet.Population);
-        }
-        else if (userInput == "diameter")
-        {
-            ShowStatistics(planets, "diameter", planet => planet.Diameter);
-        }
-        else if (userInput == "surface water")
-        {
-            ShowStatistics(planets, "surface wate", planet => planet.SurfaceWater);
-        }
-        else
+        if(userInput is null || !propertyNamesToSelector.ContainsKey(userInput))
         {
             Console.WriteLine("Invalid choice!");
         }
+        else
+        {
+            ShowStatistics(planets, userInput, propertyNamesToSelector[userInput]);
+        }
     }
 
-    private void ShowStatistics(IEnumerable<Planet> planets, string propertyName, Func<Planet, int?> propertySelector)
+    private static void ShowStatistics(IEnumerable<Planet> planets, string propertyName, Func<Planet, int?> propertySelector)
     {
         var maxPlanet = planets.MaxBy(propertySelector);
         Console.WriteLine($"Max {propertyName} is: {propertySelector(maxPlanet)} (planet: {maxPlanet.Name})");
@@ -86,7 +84,7 @@ public class StarWarsPlanetsStatsApp
         Console.WriteLine($"Min {propertyName} is: {propertySelector(minPlanet)} (planet: {minPlanet.Name})");
     }
 
-    private IEnumerable<Planet> ToPlanet(List<Root>? root)
+    private static IEnumerable<Planet> ToPlanet(List<Root>? root)
     {
         if(root is null)
         {
