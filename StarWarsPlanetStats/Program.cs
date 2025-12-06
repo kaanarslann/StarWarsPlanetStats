@@ -45,6 +45,45 @@ public class StarWarsPlanetsStatsApp
 
         var root = JsonSerializer.Deserialize<List<Root>>(json);
         var planets = ToPlanet(root);
+
+        foreach(var planet in planets)
+        {
+            Console.WriteLine(planet);
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("The statistics of which property would you like to see?");
+        Console.WriteLine("population");
+        Console.WriteLine("diameter");
+        Console.WriteLine("surface water");
+
+        var userInput = Console.ReadLine();
+
+        if(userInput == "population")
+        {
+            ShowStatistics(planets, "population", planet => planet.Population);
+        }
+        else if (userInput == "diameter")
+        {
+            ShowStatistics(planets, "diameter", planet => planet.Diameter);
+        }
+        else if (userInput == "surface water")
+        {
+            ShowStatistics(planets, "surface wate", planet => planet.SurfaceWater);
+        }
+        else
+        {
+            Console.WriteLine("Invalid choice!");
+        }
+    }
+
+    private void ShowStatistics(IEnumerable<Planet> planets, string propertyName, Func<Planet, int?> propertySelector)
+    {
+        var maxPlanet = planets.MaxBy(propertySelector);
+        Console.WriteLine($"Max {propertyName} is: {propertySelector(maxPlanet)} (planet: {maxPlanet.Name})");
+
+        var minPlanet = planets.MinBy(propertySelector);
+        Console.WriteLine($"Min {propertyName} is: {propertySelector(minPlanet)} (planet: {minPlanet.Name})");
     }
 
     private IEnumerable<Planet> ToPlanet(List<Root>? root)
@@ -70,10 +109,10 @@ public readonly record struct Planet
 {
     public string Name { get; }
     public int? Diameter { get; }
-    public int? SurfacecWater { get; }
+    public int? SurfaceWater { get; }
     public int? Population { get; }
 
-    public Planet(string name, int? diameter, int? surfacecWater, int? population)
+    public Planet(string name, int? diameter, int? surfaceWater, int? population)
     {
         if(name is null)
         {
@@ -82,7 +121,7 @@ public readonly record struct Planet
 
         Name = name;
         Diameter = diameter;
-        SurfacecWater = surfacecWater;
+        SurfaceWater = surfaceWater;
         Population = population;
     }
 
